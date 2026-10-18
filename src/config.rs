@@ -31,6 +31,13 @@ pub struct Config {
     /// `secrets/` (its secrets dir is a scratch copy): a refusal in a
     /// rehearsal is a real refusal on the API account.
     pub refusals_dir: PathBuf,
+    /// Where a Steward stop's sealed dump is written:
+    /// `AGORA_COUNCIL_STOPS_DIR`, else `refusals_dir`, where an unresolved
+    /// one blocks the next sitting until the Council has heard it.
+    /// `council-rehearse` points it at the rehearsal's own dumps: a stop in
+    /// a rehearsal is recorded only on the throwaway copy, and is no reason
+    /// to hold a real sitting.
+    pub stops_dir: PathBuf,
     /// Where the Steward's record (REC) of an aborted sitting is drafted:
     /// `AGORA_COUNCIL_RECORDS_DIR`, else `governance/records` (the council
     /// runs from the repository root under `just`).
@@ -122,6 +129,9 @@ impl Config {
         let refusals_dir = std::env::var("AGORA_COUNCIL_REFUSALS_DIR")
             .map(PathBuf::from)
             .unwrap_or_else(|_| secrets_dir.join("council").join("refusals"));
+        let stops_dir = std::env::var("AGORA_COUNCIL_STOPS_DIR")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| refusals_dir.clone());
         let records_dir = std::env::var("AGORA_COUNCIL_RECORDS_DIR")
             .map(PathBuf::from)
             .unwrap_or_else(|_| PathBuf::from("governance").join("records"));
@@ -147,6 +157,7 @@ impl Config {
             max_agenda_items,
             log_level,
             refusals_dir,
+            stops_dir,
             records_dir,
             read_url,
         })
@@ -168,6 +179,7 @@ impl Config {
             // Nothing is written here unless a test points these at its
             // own temporary directory first.
             refusals_dir: std::env::temp_dir().join("agora-council-tests-unset/refusals"),
+            stops_dir: std::env::temp_dir().join("agora-council-tests-unset/refusals"),
             records_dir: std::env::temp_dir().join("agora-council-tests-unset/records"),
             // Tests never reach a server; they script reads instead.
             read_url: None,

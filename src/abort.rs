@@ -764,7 +764,11 @@ async fn write_dump(
     briefing: Option<ClerkBriefing<'_>>,
 ) -> anyhow::Result<Sealed> {
     let sealed_at = Utc::now();
-    let dir = create_dump_dir(&config.refusals_dir, sealed_at, &moment.subject).await?;
+    let root = match cause {
+        Cause::StewardStop(_) => &config.stops_dir,
+        Cause::Refusal(_) | Cause::Emission(_) => &config.refusals_dir,
+    };
+    let dir = create_dump_dir(root, sealed_at, &moment.subject).await?;
 
     let mut files = Vec::new();
     match cause {

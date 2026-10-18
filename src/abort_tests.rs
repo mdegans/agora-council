@@ -51,6 +51,7 @@ impl Scratch {
     pub(crate) fn config(&self) -> Config {
         let mut config = test_config();
         config.refusals_dir = self.0.join("secrets/council/refusals");
+        config.stops_dir = config.refusals_dir.clone();
         config.records_dir = self.0.join("governance/records");
         config
     }
@@ -1329,4 +1330,29 @@ async fn heard_is_refused_for_a_refusal() {
     )
     .expect_err("`heard` is for a stop");
     assert!(err.to_string().contains("Steward stop"), "{err}");
+}
+
+/// A stop sealed under a separate `stops_dir` (a rehearsal's) blocks
+/// nothing: refusals and emission breaches still seal in `refusals_dir`
+#[tokio::test]
+async fn a_stop_in_a_rehearsal_seals_apart_and_blocks_no_sitting() {
+    let scratch = Scratch::new("stop-apart");
+    let mut config = scratch.config();
+    config.stops_dir = scratch.0.join("rehearsal/stops");
+    let item = test_item();
+    let mut responses = four(crate::councillor::harness_tests::not_limiting);
+    responses.push(submission_response(position_input()));
+    let (err, _) = sit_to_stop(
+        &config,
+        &item,
+        responses,
+        Some(5),
+        vec![Said::Text("Rehearsal stopped to change the prompt.")],
+    )
+    .await;
+    let aborted = SittingAborted::find(&err).expect("an abort");
+    let sealed = aborted.sealed.as_ref().expect("sealed");
+    assert_eq!(sealed.dir.parent(), Some(config.stops_dir.as_path()));
+    assert!(pending(&config.refusals_dir).unwrap().is_empty());
+    ensure_none_pending(&config).expect("a rehearsal's stop holds no sitting");
 }
