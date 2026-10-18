@@ -779,13 +779,16 @@ pub(crate) async fn run_item<T: RawTransport>(
                 .iter()
                 .filter(|r| r.role != councillor.role)
                 .collect();
-            let content = context::deliberation_content(
+            let mut content = context::deliberation_content(
                 &item.category,
                 round_number,
                 &others,
                 heard(standing, steward_notes.as_deref())?,
                 crate::witness::heard_by(&testimony, councillor.role),
             );
+            if let Some(reminder) = crate::witness::reminder(item) {
+                content.push(reminder);
+            }
 
             println!("  [{}]:", councillor.role);
             progress.stage = Stage::Round {

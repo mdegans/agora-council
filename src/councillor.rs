@@ -36,11 +36,13 @@
 //! order of the calls, never the order they finished in.
 //! `MAX_LOOKUPS_PER_EXCHANGE` counts each call.
 //!
-//! **A submission must come alone.** A response that carries a submission
-//! (its response-format JSON) *and* lookups is not a submission: its
-//! lookups are answered, and the submission (or each, if there are two)
-//! is refused in the same message, after the results, telling the seat to
-//! submit in a turn with no calls. Answering the lookups rather than
+//! **A submission must come alone** (kept 2026-10-18 though the API allows
+//! both: accepted, the calls' results would open the next message, beside
+//! the Steward's notes). A response that carries a submission (its
+//! response-format JSON) *and* lookups is not a submission: its lookups
+//! are answered, and the submission (or each, if there are two) is refused
+//! in the same message, after the results, telling the seat to submit in
+//! a reply with no calls. Answering the lookups rather than
 //! refusing them keeps the record of what the seat read whole, and the
 //! seat submits next turn having seen what it asked for.
 
@@ -1078,9 +1080,10 @@ fn mixed_refusal(stray: &[String]) -> String {
         _ => (format!("Your submissions ({})", named.join(", ")), "were"),
     };
     format!(
-        "{what} came in the same turn as tool calls, so it {was} not recorded. \
-         Your calls are answered above. A submission must come alone: when you \
-         have read what you need, submit in a turn with no tool calls."
+        "{what} came in the same reply as tool calls, so it {was} not recorded. \
+         Your calls are answered above, and your turn goes on. A submission \
+         must come alone: when you have read what you need, submit in a reply \
+         with no tool calls."
     )
 }
 

@@ -433,3 +433,17 @@ fn seeded_turns_must_alternate() {
     upper.description = "Runs at 10.9.9.9 (see 10.9.9.9)".into();
     assert!(crate::witness::check(&[upper]).is_err());
 }
+
+/// Each deliberation round on an item with witnesses says who can be
+/// asked and that asking does not cost the turn; an item without says
+/// nothing
+#[test]
+fn every_round_reminds_the_seats_they_can_ask() {
+    let mut item = test_item();
+    assert!(crate::witness::reminder(&item).is_none());
+    item.witnesses = vec![qwen()];
+    let line = crate::witness::reminder(&item).unwrap();
+    assert!(line.contains("`qwen` (Qwen 3.8)"), "{line}");
+    assert!(line.contains("does not use up your turn"), "{line}");
+    assert!(!line.contains("10.9.9.9"));
+}

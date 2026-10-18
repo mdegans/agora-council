@@ -962,6 +962,27 @@ pub fn roster(item: &AgendaItem) -> Option<Content> {
     Some(out)
 }
 
+/// The line closing each deliberation round's message on an item with
+/// witnesses: who is on the bench, and that asking does not cost the turn
+/// (the 2026-10-18 rehearsal's seats read "a lookup can't combine with a
+/// submission" as "asking forfeits the turn", and never asked)
+pub fn reminder(item: &AgendaItem) -> Option<String> {
+    if item.witnesses.is_empty() {
+        return None;
+    }
+    let named: Vec<String> = item
+        .witnesses
+        .iter()
+        .map(|w| format!("`{}` ({})", w.id, defang(&w.name)))
+        .collect();
+    Some(format!(
+        "Witnesses on this item: {}. You may put one question to a witness \
+         this turn with `ask_witness`. Asking does not use up your turn: ask, \
+         read the answer, then submit in a later reply.",
+        named.join(", ")
+    ))
+}
+
 /// What the other seats heard from witnesses in the round before, for a
 /// seat's next message: one section, every exchange but its own
 pub fn heard_by(exchanges: &[Exchange], seat: CouncilSeat) -> Content {

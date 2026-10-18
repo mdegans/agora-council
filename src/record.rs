@@ -176,6 +176,9 @@ pub struct Position {
     /// deliberation round.
     pub position: String,
     /// Questions for the other councillors or the Steward. Empty if none.
+    /// A question for one of the item's witnesses is not asked here: from
+    /// round 2, put it to the witness with `ask_witness`, a tool call like
+    /// any lookup, which does not use up your turn.
     pub questions: Vec<String>,
     /// Your preliminary vote. Vote `defer` only if the item cannot be
     /// decided without information the Council lacks.
