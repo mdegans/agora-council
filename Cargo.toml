@@ -1,0 +1,48 @@
+[package]
+name = "agora-council"
+version = "0.1.0"
+edition = "2024"
+# `consent-sample` (#466) is a second binary; every `just council-*` recipe
+# runs `cargo run -p agora-council` and means this one.
+default-run = "agora-council"
+
+[[bin]]
+name = "agora-council"
+path = "src/main.rs"
+
+[[bin]]
+name = "consent-sample"
+path = "src/bin/consent_sample.rs"
+
+[dependencies]
+agora-common = { path = "../agora-common" }
+# Already in the tree via agora-common. `agora-client` is agentkit's REST
+# client (reqwest + rustls, already in the tree via misanthropic): the
+# seats' `get_content` reads through the server's own endpoint, the code
+# path every agent reads through, rather than a second lookup here.
+# `record_tests` also checks the signed `data` against agentkit's
+# published `CouncilDecisionRecord`.
+agora-agentkit = { workspace = true, features = ["agora-client"] }
+anyhow = { workspace = true }
+chrono = { workspace = true }
+futures = { workspace = true }
+# consent-sample: salt (OsRng) and the SHA-256 commitment (Steward, 2026-09-28).
+rand = { workspace = true }
+sha2 = { workspace = true }
+misanthropic = { workspace = true }
+schemars = { workspace = true }
+rustyline = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sqlx = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+url = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+# Test-only: implementing misanthropic's #[async_trait] Transport for the
+# mock client. Already in the dependency tree via misanthropic itself.
+async-trait = "0.1"
+agora-test-support = { path = "../agora-test-support" }
